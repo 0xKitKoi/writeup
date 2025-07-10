@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, Form } from 'react-router-dom'
 //import { HashRouter as Router } from 'react-router-dom';
 import './index.css'
 import Home from '@/pages/Home'
@@ -8,6 +8,7 @@ import WTDD from '@/pages/WTDD'
 import Micro from '@/pages/Microcontroller'
 import TODO from '@/pages/TODO'
 import Game from '@/pages/Game'
+import FORM from '@/pages/Form'
 // <Route path="*" element={<NotFound />} />
 // <Route path="/" element={< />} />
 // <Route path="/" element={<Home />} />
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/Micro" element={<Micro />} />
         <Route path="/ToDo" element={<TODO />} />
         <Route path="/Game" element={<Game />} />
+        <Route path="/Form" element={<FORM />} />
       </Routes>
     </Router>
   )
