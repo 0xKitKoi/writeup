@@ -9,7 +9,7 @@ import ImageSection from '@/components/ImageSection';
 
 const FORM = () => {
   return (
-    <div className="min-h-screen bg-cover bg-center text-zinc-100">
+    <div className="bg-zinc-700 min-h-screen bg-cover bg-center text-zinc-100">
       <Header 
         title="College Club SignUp Form"
         subtitle="Why use google forms when I can make my own?"

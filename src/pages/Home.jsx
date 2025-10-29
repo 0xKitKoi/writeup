@@ -9,7 +9,7 @@ import ImageSection from '@/components/ImageSection';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-cover bg-center text-zinc-100 flex flex-col items-center space-y-8">
+    <div className="bg-zinc-700 min-h-screen bg-cover bg-center text-zinc-100 flex flex-col items-center space-y-8">
       <Header 
         title="React Blog"
         subtitle="Custom Writeup Blog for my Projects"

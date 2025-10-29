@@ -9,7 +9,7 @@ import ImageSection from '@/components/ImageSection';
 
 const Game = () => {
   return (
-    <div className="min-h-screen bg-cover bg-center text-zinc-100">
+    <div className="bg-zinc-700 min-h-screen bg-cover bg-center text-zinc-100">
       <Header 
         title="A Scuzzy Game"
         subtitle="A custom game engine in C++ and SDL2"

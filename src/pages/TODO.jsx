@@ -9,7 +9,7 @@ import ImageSection from '@/components/ImageSection';
 
 const TODO = () => {
   return (
-    <div className="min-h-screen bg-cover bg-center text-zinc-100">
+    <div className="bg-zinc-700 min-h-screen bg-cover bg-center text-zinc-100">
       <Header 
         title="dId SoMeOnE sAy WeBdEv wItH PYtHoN?!?!1?"
         subtitle="'Because python can do anything.. Just Badly.' - michael reeves"

@@ -9,7 +9,7 @@ import ImageSection from '@/components/ImageSection';
 
 const Micro = () => {
   return (
-    <div className="min-h-screen bg-cover bg-center text-zinc-100">
+    <div className="bg-zinc-700 min-h-screen bg-cover bg-center text-zinc-100">
       <Header 
         title="A Wireless Serial Monitor"
         subtitle="with mouse coordinates and a retro theme"
