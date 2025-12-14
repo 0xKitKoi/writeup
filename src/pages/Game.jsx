@@ -16,6 +16,11 @@ const Game = () => {
       />
       
       <main className="container mx-auto px-4 py-12">
+        <ImageSection 
+          title="making the worst idea ever into a game with no game engine"
+          imageUrl="https://www.scuzzy.space/conceptscuzzy1.png"
+        />
+
         <ProjectArticle 
           title="It's a classic"
           content="
@@ -25,45 +30,63 @@ const Game = () => {
 	        "
         />
 
+        <ImageSection 
+          title="So far: "
+          imageUrl="https://www.scuzzy.space/alleyanim.gif"
+        />
+
         <CodeSnippet 
           title="No game engine means doing everything yourself"
           code={`
-          void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
-          {
-	          SDL_Rect srcRect;
-            // Entities can have a pointer to an Enemy object or an NPC Object
-	          if (m_Enemy) {
-		          SDL_Rect TargetRect = PlayerPos; // Player's collision box
-		          TargetRect.x = TargetRect.x + TargetRect.w / 2;
-		          TargetRect.y = TargetRect.y + TargetRect.h / 2;
-		          TargetRect.w = TargetRect.w / 2;
-		          TargetRect.w = TargetRect.h / 2;
-		          m_Enemy->Update(deltaTime, CameraRect, TargetRect); // Lerp to player for fight
-	          }
-	          if (m_NPC) {
-		          m_NPC->Update(deltaTime, CameraRect, PlayerPos);
-	          }
+// parent class npc with a virtual update function to override
+// Parent NPC class holds a shared pointer to an entity object.
+// I loop over all my entities to call their update() functions. This is faster. 
+class DoorNPC : public NPC {
+  public:
+  DoorNPC(std::shared_ptr<Entity> entity, std::string room, Vector2f Location) : NPC(entity, gameState.Text) { // needs a vector to shutup
+    m_Location = Location;
+    m_room = room;
+  }
+  // Custom Update Function to act as a level changer
+  void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    if (m_checked) {
+			printf("Loading new room: %s\\n", m_room.c_str());
+      gameState.room = m_room; // Updating gameState flags
+			gameState.LoadingScreen = true;
+      gameState.DoneLoading = false;
+      gameState.fade = true;
+      gameState.textAvailable;
+      gameState.callbackNPC = this;
+      m_checked = false;
+      gameState.player->SetPosX(m_Location.x); // Only this NPC has this data. Each are unique.
+			gameState.player->SetPosY(m_Location.y);
+			gameState.player->reset({ m_Location.x, m_Location.y });
+    }
+  }
+};
 
-	          if (moving) {
-		          // Calculates index of frame to use in animation.
-		          lastFrameTime += deltaTime * 1000.0f;
-		          if (lastFrameTime >= frameDuration) {
-			          currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
-			          lastFrameTime = 0;
-		          }
-	          }
-            
-            srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
-	          m_Collider = { m_PosX, m_PosY, 128, 128 }; 
-            // This is a collision box to see the player.
-	          m_FOV = { (m_PosX + (m_Collider.w / 2)) - ((128*3)/2) , (m_PosY + (m_Collider.h / 2)) - ((128 * 3) / 2), (int)(currentFrame.w * 3), (int)(currentFrame.h * 3)};
+// This NPC is a sign that displays text when checked by the player. 
+class SIGNNPC : public NPC {
+  public:
+  SIGNNPC(const std::vector<std::string> dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}
+  void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    if (m_checked) {
+      gameState.Text.clear();
+      gameState.Text = m_Dialogue;
+      gameState.textAvailable = true;
+      m_checked = false;
 
-	          //SDL_RenderDrawRect(gRenderer, &m_Collider);
-	          m_Texture->render(m_PosX - CameraRect.x, m_PosY - CameraRect.y, &srcRect);
-          }
-            `}
-
-        />
+      gameState.textIndex = 0;
+      gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
+      gameState.textTimer = 0.0f;
+      gameState.textAnimating = true;
+      gameState.currentDisplayText = gameState.Text[0][0];// "";
+      gameState.shouldAnimateText = true;  // This is dialogue, so animate it
+      gameState.textAvailable = true;
+    }
+  }
+};   
+  `}/>
 
         <ProjectArticle
         content={`
