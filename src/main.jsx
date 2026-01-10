@@ -9,6 +9,7 @@ import Micro from '@/pages/Microcontroller'
 import TODO from '@/pages/TODO'
 import Game from '@/pages/Game'
 import FORM from '@/pages/Form'
+import Car from '@/pages/Car'
 // <Route path="*" element={<NotFound />} />
 // <Route path="/" element={< />} />
 // <Route path="/" element={<Home />} />
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/ToDo" element={<TODO />} />
         <Route path="/Game" element={<Game />} />
         <Route path="/Form" element={<FORM />} />
+        <Route path="/Car" element={<Car />} />
       </Routes>
     </Router>
   )

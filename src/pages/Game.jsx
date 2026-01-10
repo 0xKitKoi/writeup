@@ -34,107 +34,128 @@ const Game = () => {
           title="So far: "
           imageUrl="https://www.scuzzy.space/alleyanim.gif"
         />
-
+        <ProjectArticle
+          content={`
+            I really liked Unity's update() architecture for game objects, and when I started this project I knew I had to make my own implementation of it, since I'm responsible for efficient code flow. 
+            The Main application loop is unlike most hobby game engines, I refuse to make a game class that makes the main file a 4 line file. The main application loop should be the game itself.
+            As such, the main loop handles input, calling update functions, and telling objects to render themselves. Each object in the game is an entity, and each entity has a shared pointer to a child class that makes it entirely unique using polymorphism and virtual functions.
+            These child classes are either NPC or Enemy. Each has their own virtual update function that is overridden to do whatever that object needs to do. 
+            This makes the game very flexible, as I can make each object do whatever I want without being constrained by a rigid engine architecture. Each character can have their own unique behavior and logic, and can effect the gameState object in a very special way. Lets look at some polymorphic examples.
+            `}
+        />
         <CodeSnippet 
           title="No game engine means doing everything yourself"
           code={`
-// parent class npc with a virtual update function to override
-// Parent NPC class holds a shared pointer to an entity object.
-// I loop over all my entities to call their update() functions. This is faster. 
-class DoorNPC : public NPC {
-  public:
-  DoorNPC(std::shared_ptr<Entity> entity, std::string room, Vector2f Location) : NPC(entity, gameState.Text) { // needs a vector to shutup
-    m_Location = Location;
-    m_room = room;
-  }
-  // Custom Update Function to act as a level changer
-  void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
-    if (m_checked) {
-			printf("Loading new room: %s\\n", m_room.c_str());
-      gameState.room = m_room; // Updating gameState flags
-			gameState.LoadingScreen = true;
-      gameState.DoneLoading = false;
-      gameState.fade = true;
-      gameState.textAvailable;
-      gameState.callbackNPC = this;
-      m_checked = false;
-      gameState.player->SetPosX(m_Location.x); // Only this NPC has this data. Each are unique.
-			gameState.player->SetPosY(m_Location.y);
-			gameState.player->reset({ m_Location.x, m_Location.y });
+
+/// Base Item class https://github.com/0xKitKoi/ScuzzyGame
+class Item {
+public:
+    int m_ItemID = 0; // This is used for saving to a file. 
+    std::string m_ItemName = "Default Item Name"; 
+    std::string m_ItemDescription = "Default Item Description";
+    virtual int Use() { 
+        printf("Use() Called on base Item class! This should be overridden!\\n"); 
+        return 0; 
     }
-  }
+    virtual ~Item() = default; // Virtual destructor.
 };
 
-// This NPC is a sign that displays text when checked by the player. 
-class SIGNNPC : public NPC {
-  public:
-  SIGNNPC(const std::vector<std::string> dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}
-  void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
-    if (m_checked) {
-      gameState.Text.clear();
-      gameState.Text = m_Dialogue;
-      gameState.textAvailable = true;
-      m_checked = false;
-
-      gameState.textIndex = 0;
-      gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
-      gameState.textTimer = 0.0f;
-      gameState.textAnimating = true;
-      gameState.currentDisplayText = gameState.Text[0][0];// "";
-      gameState.shouldAnimateText = true;  // This is dialogue, so animate it
-      gameState.textAvailable = true;
+class BandAid : public Item { 
+public:
+    BandAid() {
+        m_ItemID = 1;
+        m_ItemName = "Band-Aid";
+        m_ItemDescription = "A simple band-aid that heals 5 HP.";
     }
-  }
-};   
+    int Use() override { // Overriding the base Item class to make a healing item!
+        gameState.HP += 5;
+        return 1;
+    }
+};
+
+class Key : public Item {
+public:
+    Key() {
+        m_ItemID = 2;
+        m_ItemName = "Key";
+        m_ItemDescription = "A small key that unlocks doors.";
+    }
+    int Use() override{
+        gameState.money += 10;
+        return 1;
+    }
+};
+            
   `}/>
 
         <ProjectArticle
         content={`
-          You can see the OOP design in the code snippet above. No game engine means I have to tell objects to render. Every frame, the engine goes through a very small vector of Entities, which is a class that all objects in the game have. Each entity has an Update function that handles rendering and various other things like bounds detection and movement. Right now there are two child classes: NPC's and Enemies. The Entity object holds a shared pointer to whatever that entity is, and calls a custom update function tailored to the object and it's needs. This is possible because of virtual functions that are overwritten.
-          I can make an entity do anything I want. A custom virtual update function means each entity can do wildly different things, and each NPC can hold their own dialogue system and manipulate the gamestate in different ways.
+          Here's an example of how items are implemented in the game. Each item is a child class of the base Item class, and each item overrides the Use() function to do whatever it needs to do.
+          This usually entails modifying the gameState object in some way, like healing the player or triggering a boolean flag stored in the gameState object. 
+          This way, the item logic is very simple, I just grab the inventory object in the gameState and call Use(). Nothing Extra, and I can make as many items as I want without changing any other code.
+          Entities like NPC's and Enemies work in a similar way.
           `}
         />
 
         <ImageSection 
-          title="So far: "
-          imageUrl="https://www.scuzzy.space/qd/POC.gif"
+          imageUrl="https://www.scuzzy.space/qd/ApplicationFlowChart.png"
         />
+        
+        <CodeSnippet
+          title="Application Flow"
+          code={`
+            // So heres a condensed psuedocode example of the main application loop
+            while (!quit) {
+              While(SDL_PollEvent(&e)) {
+                // SDL's event handling helps us get keyboard and mouse input
+                HandleInput(e); // this gives the Event to the player or the Menu / Fight system.
+              }
+                // check if we are in a fight or in a menu
+                if (inFight) {
+                  fightSystem.Update(); // fight system handles its own rendering and input
+                } else if (inMenu) {
+                  menuSystem.Update(); // menu system handles its own rendering and input
+                } else {
+                  player.Update(); // player handles its own movement and input
+                }
+                // If we are in a fight, update the enemy and the player.
+                if (inFight) {
+                  enemy.Update(); // enemy has to render itself and do its own logic.
+                  player.handleEvent(e); // give the player the event to handle movement
 
-          <ProjectArticle
-          content={`
-            The game uses a struct of booleans and special variables to manage the game state. NPC's and Enemies can use the gameState Object to decide game logic, like when or if something should happen, and update the gameState themselves usually by triggering flags or healing the player.
-            In the Demo GIF you can see the player interacting with menus. This is a custom GUI that tries to mimic Earthbound and Undertales Text based UI System. Some menus like the inventory and the main menu are a text based grid UI. There's a custom UI for in game and in a fight. 
-            Speaking of the Text based UI, Dialogue is handled in a really neat way. Each NPC holds a vector of strings and can index this vector based on the Plot points stored in the gameState object, so if an NPC has branching dialogue or is a store the player can buy items from, the logic for each is handled in the NPC's virtual update function themselves. This means each NPC can be completely different from any other NPC and is not limited in any way.
-            Collision Detection is implemented as well, Entites like Enemies and NPC's have a POV collsion box that surrounds them and when the player's own collision box intercepts this, the Entity can see the player and react accordingly. Either by LERPing to the players position to start a fight or by simply reacting to the player by starting dialogue or some game story specific actions.
+                }
+                else { // We are not in a fight, so we are in the game world.
+                  //render the map
+                  Map.Render(camera);
+                  // Update all entities in the level:
+                  for (auto& entity : Entities) { // vector of Entity shared pointers
+                    entity->Update(deltaTime, camera, player.GetCollider()); // The entity calls it's child class update function, Enemy or NPC.
+                  }
+                }
+            } 
             `}
-        />  
-
-
+        />
         <ProjectArticle
           content={`
-            Using Premake5, this project has a nice build system and it's inherently multiplatform, as the only dependancy is SDL2. This means I can compile my game on linux, and very soon, the Nintendo Wii!
-            I work on this on and off between studying for my associates degree, so I'm not a full time game dev at the moment. Even so, progress is substantial. 
+            The way this is currently architected, the main application loop is responsible for handling input, updating the player, updating the enemy, and updating all entities in the game world.
+            Think of the application flow like cups with water. The main function fills and conditional statements help guide the water to the lower cups like the player, enemy, fight system, and menu system. Each of these cups then fills their own sub-cups like rendering and logic.
+            This way, the main application loop is very flexible and can handle anything that needs to be done in the game. Each system is responsible for its own logic and rendering, and the main loop just guides the flow of the game.
+            I believe this is a good way to structure a game without a game engine, as it allows for maximum flexibility and control over the game flow, and more importantly, I'm not making a game class with a 3 line main file.
             `}
         />
 
-        {/*
-        <ImageSection 
-          title="It's not perfect"
-          imageUrl="https://www.scuzzy.space/qd/scuzzygame0-0-1A.png"
-          //altText="A beautiful space scene"
+        {
+          <ProjectArticle
+          title="Multiplatform Build System"
+          content={`Premake5 is awesome and it lets me avoid writing makefiles or project files for every platform I want to support. I included a premake5.lua file in the git repo that defines the project structure and dependencies.
+            I also added some build scripts for windows which downloads SDL2 and sets up the project for Visual Studio.
+            Linux is even easier, just install SDL2 development packages and run premake5 to generate makefiles.
+            My game is multiplatform by design, the only dependency is SDL2 which is available on all major platforms.\n`}
         />
-        <ProjectArticle 
-          title="Okay so there's issues"
-          content="
-          Development on Windows is going great, but trying to compile on ubuntu didn't go so well. I think it's time to make a build system. Right now, the git repo has the visual solution file.
-          "
-        />
-        */}
-
+          }
 
         <ProjectArticle 
-          title="Conclusion"
-          content="Watch development live on twitch at: https://twitch.tv/0xshawncena121"
+          content= {` Watch development live on twitch at: https://twitch.tv/0xshawncena121 \n https://github.com/0xKitKoi/ScuzzyGame `}
         />
       </main>
       
